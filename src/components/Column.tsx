@@ -1,17 +1,16 @@
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import type { Lead, User } from "../types";
+import type { Lead } from "../types";
 import type { StageInfo } from "../lib/constants";
 import { LeadCard, type DrawerTab } from "./LeadCard";
 
 interface Props {
   stage: StageInfo;
   leads: Lead[];
-  usersById: Record<string, User>;
   onOpen: (lead: Lead, tab: DrawerTab) => void;
 }
 
-export function Column({ stage, leads, usersById, onOpen }: Props) {
+export function Column({ stage, leads, onOpen }: Props) {
   const { setNodeRef, isOver } = useDroppable({ id: stage.id });
   return (
     <section className="flex h-full w-72 shrink-0 flex-col rounded-xl bg-slate-200/60" data-stage={stage.id}>
@@ -38,12 +37,7 @@ export function Column({ stage, leads, usersById, onOpen }: Props) {
             </div>
           ) : (
             leads.map((lead) => (
-              <LeadCard
-                key={lead.id}
-                lead={lead}
-                assignee={lead.assigneeId ? usersById[lead.assigneeId] : undefined}
-                onOpen={onOpen}
-              />
+              <LeadCard key={lead.id} lead={lead} onOpen={onOpen} />
             ))
           )}
         </div>

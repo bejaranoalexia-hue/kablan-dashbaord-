@@ -1,19 +1,13 @@
 import { useCallback, useMemo, useState } from "react";
 import type { Lead } from "./types";
-import { SEED_USERS } from "./data/seed";
 import { useLeads } from "./lib/useLeads";
 import { Board } from "./components/Board";
 import { Toolbar, type Filters } from "./components/Toolbar";
 import { LeadDrawer } from "./components/LeadDrawer";
 import type { DrawerTab } from "./components/LeadCard";
 
-const users = SEED_USERS;
-const usersById = Object.fromEntries(users.map((u) => [u.id, u]));
-
 function matches(lead: Lead, f: Filters) {
   if (f.source && lead.source !== f.source) return false;
-  if (f.assignee === "unassigned" && lead.assigneeId) return false;
-  if (f.assignee && f.assignee !== "unassigned" && lead.assigneeId !== f.assignee) return false;
   const q = f.search.trim().toLowerCase();
   if (!q) return true;
   const digits = q.replace(/\D/g, "");
@@ -27,7 +21,7 @@ function matches(lead: Lead, f: Filters) {
 
 export default function App() {
   const { leads, applyColumns, updateLead, reset } = useLeads();
-  const [filters, setFilters] = useState<Filters>({ search: "", source: "", assignee: "" });
+  const [filters, setFilters] = useState<Filters>({ search: "", source: "" });
   const [open, setOpen] = useState<{ id: string; tab: DrawerTab } | null>(null);
 
   const visibleIds = useMemo(() => new Set(leads.filter((l) => matches(l, filters)).map((l) => l.id)), [leads, filters]);
@@ -43,19 +37,11 @@ export default function App() {
           <p className="text-xs text-slate-500">Drag leads between stages to track your pipeline</p>
         </div>
       </header>
-      <Toolbar
-        filters={filters}
-        onChange={setFilters}
-        users={users}
-        shown={visibleIds.size}
-        total={leads.length}
-        onReset={reset}
-      />
+      <Toolbar filters={filters} onChange={setFilters} shown={visibleIds.size} total={leads.length} onReset={reset} />
       <main className="min-h-0 flex-1">
         <Board
           leads={leads}
           visibleIds={visibleIds}
-          usersById={usersById}
           onColumnsChange={applyColumns}
           onOpen={(lead, tab) => setOpen({ id: lead.id, tab })}
         />
@@ -64,7 +50,6 @@ export default function App() {
         <LeadDrawer
           lead={openLead}
           tab={open.tab}
-          users={users}
           onTabChange={(tab) => setOpen({ ...open, tab })}
           onSave={updateLead}
           onClose={close}

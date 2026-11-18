@@ -3,7 +3,8 @@
 import type { Lead } from "../types";
 import { buildSeedLeads } from "../data/seed";
 
-const KEY = "lead-board:leads:v1";
+// v2: new stage names, no assignee. Bumping the key starts fresh from the seed.
+const KEY = "lead-board:leads:v2";
 
 export function loadLeads(): Lead[] {
   try {

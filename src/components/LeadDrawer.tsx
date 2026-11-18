@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import type { Lead, LeadStatus, Stage, User } from "../types";
+import type { Lead, LeadStatus, Stage } from "../types";
 import { SOURCES, STAGES, STAGE_BY_ID, STATUS_LABEL } from "../lib/constants";
 import { formatDateTime } from "../lib/format";
 import type { DrawerTab } from "./LeadCard";
@@ -7,7 +7,6 @@ import type { DrawerTab } from "./LeadCard";
 interface Props {
   lead: Lead;
   tab: DrawerTab;
-  users: User[];
   onTabChange: (tab: DrawerTab) => void;
   onSave: (id: string, changes: Partial<Lead>) => void;
   onClose: () => void;
@@ -25,7 +24,7 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-export function LeadDrawer({ lead, tab, users, onTabChange, onSave, onClose }: Props) {
+export function LeadDrawer({ lead, tab, onTabChange, onSave, onClose }: Props) {
   const [draft, setDraft] = useState<Lead>(lead);
 
   // If a different lead is opened, reset the form.
@@ -43,8 +42,8 @@ export function LeadDrawer({ lead, tab, users, onTabChange, onSave, onClose }: P
   const sources = SOURCES.includes(draft.source) ? SOURCES : [draft.source, ...SOURCES];
 
   function save() {
-    const { name, email, phone, stage, source, campaign, assigneeId, status } = draft;
-    onSave(lead.id, { name: name.trim(), email: email.trim(), phone: phone.trim(), stage, source, campaign: campaign.trim(), assigneeId, status });
+    const { name, email, phone, stage, source, campaign, status } = draft;
+    onSave(lead.id, { name: name.trim(), email: email.trim(), phone: phone.trim(), stage, source, campaign: campaign.trim(), status });
     onClose();
   }
 
@@ -140,20 +139,6 @@ export function LeadDrawer({ lead, tab, users, onTabChange, onSave, onClose }: P
                   <input className={inputCls} value={draft.campaign} onChange={(e) => set("campaign", e.target.value)} />
                 </Field>
               </div>
-              <Field label="Assignee">
-                <select
-                  className={inputCls}
-                  value={draft.assigneeId ?? ""}
-                  onChange={(e) => set("assigneeId", e.target.value || null)}
-                >
-                  <option value="">Unassigned</option>
-                  {users.map((u) => (
-                    <option key={u.id} value={u.id}>
-                      {u.name}
-                    </option>
-                  ))}
-                </select>
-              </Field>
               <dl className="grid grid-cols-2 gap-3 rounded-lg bg-slate-50 p-3 text-xs">
                 <div>
                   <dt className="text-slate-500">Created</dt>

@@ -2,13 +2,13 @@
 // later with a database layer (SQLite / Supabase) or an Electron/Tauri backend.
 
 export type Stage =
-  | "new"
+  | "new_opportunity"
   | "contacted"
-  | "quoted"
-  | "nurturing"
-  | "won"
+  | "first_follow_up"
+  | "second_follow_up"
+  | "final_follow_up"
   | "lost"
-  | "closed";
+  | "won";
 
 export type LeadStatus = "not_started" | "in_progress";
 
@@ -21,14 +21,7 @@ export interface Lead {
   position: number; // order within its column (0 = top)
   source: string;
   campaign: string;
-  assigneeId: string | null;
   status: LeadStatus;
   createdAt: string; // ISO date string
   updatedAt: string; // ISO date string
-}
-
-export interface User {
-  id: string;
-  name: string;
-  initials: string;
 }

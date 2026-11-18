@@ -12,7 +12,7 @@ import {
   type DragStartEvent,
 } from "@dnd-kit/core";
 import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
-import type { Lead, Stage, User } from "../types";
+import type { Lead, Stage } from "../types";
 import { STAGES } from "../lib/constants";
 import { toColumns, type Columns } from "../lib/useLeads";
 import { Column } from "./Column";
@@ -21,7 +21,6 @@ import { LeadCardView, type DrawerTab } from "./LeadCard";
 interface Props {
   leads: Lead[]; // all leads
   visibleIds: Set<string>; // leads that pass search + filters
-  usersById: Record<string, User>;
   onColumnsChange: (cols: Columns) => void;
   onOpen: (lead: Lead, tab: DrawerTab) => void;
 }
@@ -33,7 +32,7 @@ function findStage(id: string, cols: Columns): Stage | undefined {
   return (Object.keys(cols) as Stage[]).find((stage) => cols[stage].includes(id));
 }
 
-export function Board({ leads, visibleIds, usersById, onColumnsChange, onOpen }: Props) {
+export function Board({ leads, visibleIds, onColumnsChange, onOpen }: Props) {
   // While dragging we work on a temporary copy of the layout, then commit on drop.
   const [dragCols, setDragCols] = useState<Columns | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -111,19 +110,13 @@ export function Board({ leads, visibleIds, usersById, onColumnsChange, onOpen }:
               .filter((id) => visibleIds.has(id))
               .map((id) => leadsById[id])
               .filter(Boolean)}
-            usersById={usersById}
             onOpen={onOpen}
           />
         ))}
       </div>
       <DragOverlay>
         {activeLead ? (
-          <LeadCardView
-            lead={activeLead}
-            assignee={activeLead.assigneeId ? usersById[activeLead.assigneeId] : undefined}
-            onOpen={() => {}}
-            overlay
-          />
+          <LeadCardView lead={activeLead} onOpen={() => {}} overlay />
         ) : null}
       </DragOverlay>
     </DndContext>

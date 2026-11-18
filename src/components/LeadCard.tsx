@@ -1,21 +1,19 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import type { Lead, User } from "../types";
+import type { Lead } from "../types";
 import { STAGE_BY_ID, STATUS_LABEL } from "../lib/constants";
 import { formatDateTime } from "../lib/format";
-import { Avatar } from "./Avatar";
 
 export type DrawerTab = "details" | "conversation";
 
 interface Props {
   lead: Lead;
-  assignee: User | undefined;
   onOpen: (lead: Lead, tab: DrawerTab) => void;
   overlay?: boolean;
 }
 
 /** Visual card. Used both inside the column (sortable) and in the drag overlay. */
-export function LeadCardView({ lead, assignee, onOpen, overlay }: Props) {
+export function LeadCardView({ lead, onOpen, overlay }: Props) {
   const stage = STAGE_BY_ID[lead.stage];
   const inProgress = lead.status === "in_progress";
   return (
@@ -41,11 +39,7 @@ export function LeadCardView({ lead, assignee, onOpen, overlay }: Props) {
         )}
       </div>
 
-      <div className="mt-3 flex items-center justify-between gap-2">
-        <div className="flex min-w-0 items-center gap-1.5">
-          <Avatar user={assignee} />
-          <span className="truncate text-xs text-slate-600">{assignee?.name ?? "Unassigned"}</span>
-        </div>
+      <div className="mt-3 flex items-center gap-2">
         <span
           className={`flex shrink-0 items-center gap-1 text-[11px] font-medium ${inProgress ? "text-sky-700" : "text-slate-500"}`}
         >

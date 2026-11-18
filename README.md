@@ -16,8 +16,8 @@ Then open http://localhost:5173 in your browser. Press `Ctrl+C` in the terminal 
 
 | Path | What it is |
 | --- | --- |
-| `src/types.ts` | Data model (`Lead`, `User`) |
-| `src/data/seed.ts` | Invented sample leads and users |
+| `src/types.ts` | Data model (`Lead`, stages, status) |
+| `src/data/seed.ts` | Invented sample leads |
 | `src/lib/storage.ts` | Saving/loading (currently `localStorage`; swap for SQLite/Supabase later) |
 | `src/lib/useLeads.ts` | All lead state and actions (move, update, reset) |
 | `src/lib/constants.ts` | Stages (columns), sources, status labels |

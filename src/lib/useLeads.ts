@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import type { Lead, Stage } from "../types";
 import { loadLeads, resetLeads, saveLeads } from "./storage";
+import { STAGES } from "./constants";
 
 export type Columns = Record<Stage, string[]>;
 
 /** Group lead ids by stage, sorted by position. */
 export function toColumns(leads: Lead[]): Columns {
-  const cols: Columns = { new: [], contacted: [], quoted: [], nurturing: [], won: [], lost: [], closed: [] };
+  const cols = Object.fromEntries(STAGES.map((s) => [s.id, [] as string[]])) as Columns;
   [...leads]
     .sort((a, b) => a.position - b.position)
     .forEach((l) => cols[l.stage].push(l.id));

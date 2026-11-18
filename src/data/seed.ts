@@ -1,41 +1,34 @@
 // Invented sample data for development only. None of these people are real.
-import type { Lead, LeadStatus, Stage, User } from "../types";
+import type { Lead, LeadStatus, Stage } from "../types";
 
-export const SEED_USERS: User[] = [
-  { id: "u1", name: "Maya Torres", initials: "MT" },
-  { id: "u2", name: "Jordan Pike", initials: "JP" },
-  { id: "u3", name: "Riley Chen", initials: "RC" },
-  { id: "u4", name: "Sam Okafor", initials: "SO" },
-];
-
-type SeedRow = [name: string, stage: Stage, source: string, campaign: string, assigneeId: string | null, status: LeadStatus, daysAgo: number];
+type SeedRow = [name: string, stage: Stage, source: string, campaign: string, status: LeadStatus, daysAgo: number];
 
 const ROWS: SeedRow[] = [
-  ["Harriet Lindqvist", "new", "Google LSA", "Spring Tune-Up", "u1", "not_started", 0],
-  ["", "new", "Facebook Messenger", "FB Lead Ads – Q4", null, "not_started", 0],
-  ["Dorian Wexley", "new", "Email", "Newsletter", "u2", "not_started", 1],
-  ["Priya Ramanathan", "new", "Website Form", "Free Estimate", "u3", "in_progress", 1],
-  ["", "new", "Google LSA", "Emergency Repair", "u4", "not_started", 2],
-  ["Felix Arbogast", "contacted", "Phone Call", "Organic", "u1", "in_progress", 3],
-  ["Noor Haddad", "contacted", "Facebook Messenger", "FB Lead Ads – Q4", "u2", "in_progress", 3],
-  ["Gideon Vale", "contacted", "Google LSA", "Spring Tune-Up", "u3", "not_started", 4],
-  ["Tamsin Okoro", "contacted", "Referral", "Partner Referral", "u1", "in_progress", 5],
-  ["Lucia Benedetti", "quoted", "Website Form", "Free Estimate", "u4", "in_progress", 6],
-  ["Ansel Fairbanks", "quoted", "Email", "Winter Promo", "u2", "in_progress", 7],
-  ["Wren Kowalczyk", "quoted", "Google LSA", "Emergency Repair", "u3", "not_started", 8],
-  ["Ozzie Marchetti", "nurturing", "Facebook Messenger", "Retargeting", "u1", "not_started", 10],
-  ["Bettina Sorensen", "nurturing", "Email", "Newsletter", "u4", "in_progress", 12],
-  ["", "nurturing", "Website Form", "Free Estimate", "u2", "not_started", 14],
-  ["Cyrus Abernathy", "won", "Referral", "Partner Referral", "u3", "in_progress", 15],
-  ["Mirela Dragan", "won", "Google LSA", "Spring Tune-Up", "u1", "in_progress", 16],
-  ["Quentin Ashby", "won", "Phone Call", "Organic", "u4", "in_progress", 18],
-  ["Ines Valcourt", "lost", "Facebook Messenger", "FB Lead Ads – Q4", "u2", "not_started", 20],
-  ["Bram Holloway", "lost", "Email", "Winter Promo", "u3", "not_started", 21],
-  ["Saoirse Delaney", "lost", "Google LSA", "Emergency Repair", null, "not_started", 22],
-  ["Elio Fontaine", "closed", "Website Form", "Free Estimate", "u1", "not_started", 25],
-  ["Junie Calloway", "closed", "Referral", "Partner Referral", "u4", "not_started", 28],
-  ["Kasimir Brandt", "new", "Phone Call", "Organic", "u2", "not_started", 0],
-  ["Leontyne Hargrove", "quoted", "Facebook Messenger", "Retargeting", "u1", "in_progress", 9],
+  ["Harriet Lindqvist", "new_opportunity", "Google LSA", "Spring Tune-Up", "not_started", 0],
+  ["", "new_opportunity", "Facebook Messenger", "FB Lead Ads – Q4", "not_started", 0],
+  ["Dorian Wexley", "new_opportunity", "Email", "Newsletter", "not_started", 1],
+  ["Priya Ramanathan", "new_opportunity", "Website Form", "Free Estimate", "in_progress", 1],
+  ["", "new_opportunity", "Google LSA", "Emergency Repair", "not_started", 2],
+  ["Kasimir Brandt", "new_opportunity", "Phone Call", "Organic", "not_started", 0],
+  ["Felix Arbogast", "contacted", "Phone Call", "Organic", "in_progress", 3],
+  ["Noor Haddad", "contacted", "Facebook Messenger", "FB Lead Ads – Q4", "in_progress", 3],
+  ["Gideon Vale", "contacted", "Google LSA", "Spring Tune-Up", "not_started", 4],
+  ["Tamsin Okoro", "contacted", "Referral", "Partner Referral", "in_progress", 5],
+  ["Lucia Benedetti", "first_follow_up", "Website Form", "Free Estimate", "in_progress", 6],
+  ["Ansel Fairbanks", "first_follow_up", "Email", "Winter Promo", "in_progress", 7],
+  ["Leontyne Hargrove", "first_follow_up", "Facebook Messenger", "Retargeting", "in_progress", 9],
+  ["Wren Kowalczyk", "second_follow_up", "Google LSA", "Emergency Repair", "not_started", 8],
+  ["Ozzie Marchetti", "second_follow_up", "Facebook Messenger", "Retargeting", "not_started", 10],
+  ["Bettina Sorensen", "final_follow_up", "Email", "Newsletter", "in_progress", 12],
+  ["", "final_follow_up", "Website Form", "Free Estimate", "not_started", 14],
+  ["Ines Valcourt", "lost", "Facebook Messenger", "FB Lead Ads – Q4", "not_started", 20],
+  ["Bram Holloway", "lost", "Email", "Winter Promo", "not_started", 21],
+  ["Saoirse Delaney", "lost", "Google LSA", "Emergency Repair", "not_started", 22],
+  ["Elio Fontaine", "lost", "Website Form", "Free Estimate", "not_started", 25],
+  ["Cyrus Abernathy", "won", "Referral", "Partner Referral", "in_progress", 15],
+  ["Mirela Dragan", "won", "Google LSA", "Spring Tune-Up", "in_progress", 16],
+  ["Quentin Ashby", "won", "Phone Call", "Organic", "in_progress", 18],
+  ["Junie Calloway", "won", "Referral", "Partner Referral", "in_progress", 28],
 ];
 
 function slug(s: string) {
@@ -44,7 +37,7 @@ function slug(s: string) {
 
 export function buildSeedLeads(now = new Date()): Lead[] {
   const positions: Partial<Record<Stage, number>> = {};
-  return ROWS.map(([name, stage, source, campaign, assigneeId, status, daysAgo], i) => {
+  return ROWS.map(([name, stage, source, campaign, status, daysAgo], i) => {
     const created = new Date(now);
     created.setDate(created.getDate() - daysAgo);
     created.setHours(8 + ((i * 3) % 10), (i * 17) % 60, 0, 0);
@@ -60,7 +53,6 @@ export function buildSeedLeads(now = new Date()): Lead[] {
       position,
       source,
       campaign,
-      assigneeId,
       status,
       createdAt: created.toISOString(),
       updatedAt: created.toISOString(),

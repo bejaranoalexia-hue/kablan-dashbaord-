@@ -1,16 +1,13 @@
-import type { User } from "../types";
 import { SOURCES } from "../lib/constants";
 
 export interface Filters {
   search: string;
   source: string; // "" = all
-  assignee: string; // "" = all, "unassigned" = no assignee, otherwise user id
 }
 
 interface Props {
   filters: Filters;
   onChange: (f: Filters) => void;
-  users: User[];
   shown: number;
   total: number;
   onReset: () => void;
@@ -19,8 +16,8 @@ interface Props {
 const selectCls =
   "rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200";
 
-export function Toolbar({ filters, onChange, users, shown, total, onReset }: Props) {
-  const active = filters.search || filters.source || filters.assignee;
+export function Toolbar({ filters, onChange, shown, total, onReset }: Props) {
+  const active = filters.search || filters.source;
   return (
     <div className="flex flex-wrap items-center gap-2 px-4 py-3">
       <div className="relative min-w-60 flex-1 sm:max-w-sm">
@@ -60,25 +57,10 @@ export function Toolbar({ filters, onChange, users, shown, total, onReset }: Pro
         ))}
       </select>
 
-      <select
-        aria-label="Filter by assignee"
-        className={selectCls}
-        value={filters.assignee}
-        onChange={(e) => onChange({ ...filters, assignee: e.target.value })}
-      >
-        <option value="">All assignees</option>
-        {users.map((u) => (
-          <option key={u.id} value={u.id}>
-            {u.name}
-          </option>
-        ))}
-        <option value="unassigned">Unassigned</option>
-      </select>
-
       {active && (
         <button
           type="button"
-          onClick={() => onChange({ search: "", source: "", assignee: "" })}
+          onClick={() => onChange({ search: "", source: "" })}
           className="rounded-lg px-3 py-2 text-sm font-medium text-sky-700 hover:bg-sky-50"
         >
           Clear filters
