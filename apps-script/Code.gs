@@ -2,7 +2,8 @@
  * Lead Board – Google Sheet backend.
  *
  * Paste this whole file into your Sheet's Apps Script editor
- * (Extensions → Apps Script), set SECRET below, then Deploy → New deployment → Web app.
+ * (Extensions → Apps Script), add your key as a Script Property named SECRET,
+ * then Deploy → New deployment → Web app.
  * See SHEET_SETUP.md in the project for step-by-step instructions.
  *
  * How it works (all requests are POSTs with a JSON body that includes the key):
@@ -12,7 +13,10 @@
  * filled in automatically the next time the board loads.
  */
 
-// Must match VITE_SHEET_KEY in the project's .env.local file.
+// The secret key must match VITE_SHEET_KEY in the project's .env.local file.
+// Recommended: store it as a Script Property named SECRET
+//   (Project Settings ⚙ → Script properties → Add script property).
+// The property wins if it's set. Otherwise the value on the next line is used.
 const SECRET = 'PASTE-YOUR-KEY-HERE';
 
 // Name of the tab that holds your leads. If no tab has this name, the first tab is used.
@@ -101,9 +105,17 @@ function respond(fn) {
   return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
 }
 
+function getSecret() {
+  const fromProperty = PropertiesService.getScriptProperties().getProperty('SECRET');
+  return String(fromProperty || SECRET || '').trim();
+}
+
 function checkKey(key) {
-  if (!SECRET || SECRET === 'PASTE-YOUR-KEY-HERE') throw new Error('SECRET is not set in the Apps Script.');
-  if (key !== SECRET) throw new Error('Wrong key.');
+  const secret = getSecret();
+  if (!secret || secret === 'PASTE-YOUR-KEY-HERE') {
+    throw new Error('SECRET is not set in the Apps Script (add a Script Property named SECRET).');
+  }
+  if (key !== secret) throw new Error('Wrong key.');
 }
 
 function getSheet() {

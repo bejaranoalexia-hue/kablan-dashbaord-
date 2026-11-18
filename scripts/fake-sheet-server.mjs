@@ -70,12 +70,19 @@ const fakes = {
     formatDate: (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`,
   },
   Session: { getScriptTimeZone: () => "local" },
+  // The key is provided as a Script Property, like in the real setup.
+  // SHEET_KEY_SOURCE=code tests the fallback line in Code.gs; =none tests "no key set".
+  PropertiesService: {
+    getScriptProperties: () => ({
+      getProperty: (name) => (name === "SECRET" && !process.env.SHEET_KEY_SOURCE ? KEY : null),
+    }),
+  },
 };
 
-const code = readFileSync(new URL("../apps-script/Code.gs", import.meta.url), "utf8").replace(
-  "const SECRET = 'PASTE-YOUR-KEY-HERE';",
-  `const SECRET = ${JSON.stringify(KEY)};`,
-);
+let code = readFileSync(new URL("../apps-script/Code.gs", import.meta.url), "utf8");
+if (process.env.SHEET_KEY_SOURCE === "code") {
+  code = code.replace("const SECRET = 'PASTE-YOUR-KEY-HERE';", `const SECRET = ${JSON.stringify(KEY)};`);
+}
 const ctx = vm.createContext({ ...fakes, JSON, Object, String, Number, Math, Date });
 vm.runInContext(code + "\n;globalThis.doGet = doGet; globalThis.doPost = doPost;", ctx);
 

@@ -20,10 +20,17 @@ You can change **Stage** by hand (for example to `Contacted`). Leave **Order, Le
 
 1. In the Sheet, open **Extensions → Apps Script**.
 2. Delete everything in the editor, then paste in the whole contents of [`apps-script/Code.gs`](apps-script/Code.gs).
-3. Open the project's `.env.local` file. Copy the long value after `VITE_SHEET_KEY=`.
-4. In the script, find `const SECRET = 'PASTE-YOUR-KEY-HERE';` and replace `PASTE-YOUR-KEY-HERE` with that value. Keep the quotes.
-5. Click the **Save** icon (💾).
-6. (Optional but nice) In the function drop-down at the top choose **setup**, then click **Run**. This adds the headers,
+3. Click the **Save** icon (💾).
+4. Add your secret key as a **Script Property**:
+   1. Open the project's `.env.local` file and copy the long value after `VITE_SHEET_KEY=`.
+   2. In the Apps Script editor, click **Project Settings** (the ⚙ gear in the left sidebar).
+   3. Scroll down to **Script Properties** and click **Add script property** (or **Edit script properties**).
+   4. **Property:** `SECRET`. **Value:** paste the key, with no spaces or quotes.
+   5. Click **Save script properties**.
+
+   Leave `const SECRET = 'PASTE-YOUR-KEY-HERE';` in the code as it is. The script property takes priority.
+   (Pasting the key into that line instead also works, but then the key is visible to anyone who sees the code.)
+5. (Optional but nice) In the function drop-down at the top choose **setup**, then click **Run**. This adds the headers,
    dropdown menus for Priority and Stage, and date formatting. Google will ask you to authorize it (see the note in step 3).
 
 ## 3. Deploy it as a web app
@@ -59,8 +66,8 @@ You can change **Stage** by hand (for example to `Contacted`). Leave **Order, Le
 
 | Message on the board | What to do |
 | --- | --- |
-| "Wrong key." | The `SECRET` in the script doesn't match `VITE_SHEET_KEY` in `.env.local`. Fix it, save, then **Deploy → Manage deployments → ✏ Edit → Version: New version → Deploy**. |
-| "SECRET is not set in the Apps Script." | You haven't replaced `PASTE-YOUR-KEY-HERE` yet (step 2.4). Then redeploy as above. |
+| "Wrong key." | The `SECRET` script property doesn't match `VITE_SHEET_KEY` in `.env.local`. Check for extra spaces, quotes or a different property name. Fixing a script property takes effect right away, with no redeploy needed. |
+| "SECRET is not set in the Apps Script" | No script property named exactly `SECRET` (all capitals) exists yet. Add it as in step 2.4. |
 | "didn't send back data" | The deployment's "Who has access" isn't **Anyone**, or the URL isn't the `/exec` one. |
 | Still says "Demo data" | `.env.local` is missing the URL or key, or you didn't restart `npm run dev`. |
 
