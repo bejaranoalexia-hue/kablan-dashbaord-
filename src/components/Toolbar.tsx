@@ -1,8 +1,8 @@
-import { SOURCES } from "../lib/constants";
+import { PRIORITIES } from "../lib/constants";
 
 export interface Filters {
   search: string;
-  source: string; // "" = all
+  priority: string; // "" = all, "none" = no priority set
 }
 
 interface Props {
@@ -10,14 +10,14 @@ interface Props {
   onChange: (f: Filters) => void;
   shown: number;
   total: number;
-  onReset: () => void;
+  onReset?: () => void; // only in demo mode
 }
 
 const selectCls =
   "rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200";
 
 export function Toolbar({ filters, onChange, shown, total, onReset }: Props) {
-  const active = filters.search || filters.source;
+  const active = filters.search || filters.priority;
   return (
     <div className="flex flex-wrap items-center gap-2 px-4 py-3">
       <div className="relative min-w-60 flex-1 sm:max-w-sm">
@@ -37,30 +37,31 @@ export function Toolbar({ filters, onChange, shown, total, onReset }: Props) {
           type="search"
           value={filters.search}
           onChange={(e) => onChange({ ...filters, search: e.target.value })}
-          placeholder="Search name, email or phone"
+          placeholder="Search name, company, email or phone"
           aria-label="Search leads"
           className="w-full rounded-lg border border-slate-300 bg-white py-2 pr-3 pl-9 text-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200"
         />
       </div>
 
       <select
-        aria-label="Filter by source"
+        aria-label="Filter by priority"
         className={selectCls}
-        value={filters.source}
-        onChange={(e) => onChange({ ...filters, source: e.target.value })}
+        value={filters.priority}
+        onChange={(e) => onChange({ ...filters, priority: e.target.value })}
       >
-        <option value="">All sources</option>
-        {SOURCES.map((s) => (
-          <option key={s} value={s}>
-            {s}
+        <option value="">All priorities</option>
+        {PRIORITIES.map((p) => (
+          <option key={p} value={p}>
+            {p}
           </option>
         ))}
+        <option value="none">No priority</option>
       </select>
 
       {active && (
         <button
           type="button"
-          onClick={() => onChange({ search: "", source: "" })}
+          onClick={() => onChange({ search: "", priority: "" })}
           className="rounded-lg px-3 py-2 text-sm font-medium text-sky-700 hover:bg-sky-50"
         >
           Clear filters
@@ -71,15 +72,17 @@ export function Toolbar({ filters, onChange, shown, total, onReset }: Props) {
         <span>
           Showing {shown} of {total}
         </span>
-        <button
-          type="button"
-          onClick={() => {
-            if (confirm("Reset the board to the sample leads? Your changes will be lost.")) onReset();
-          }}
-          className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-600 hover:bg-slate-50"
-        >
-          Reset sample data
-        </button>
+        {onReset && (
+          <button
+            type="button"
+            onClick={() => {
+              if (confirm("Reset the board to the sample leads? Your changes will be lost.")) onReset();
+            }}
+            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-600 hover:bg-slate-50"
+          >
+            Reset sample data
+          </button>
+        )}
       </div>
     </div>
   );

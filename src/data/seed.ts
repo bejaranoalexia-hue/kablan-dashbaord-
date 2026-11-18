@@ -1,59 +1,67 @@
-// Invented sample data for development only. None of these people are real.
-import type { Lead, LeadStatus, Stage } from "../types";
+// Invented sample data for "demo mode" (when no Google Sheet is connected).
+// None of these people or companies are real.
+import type { Lead, Priority, Stage } from "../types";
 
-type SeedRow = [name: string, stage: Stage, source: string, campaign: string, status: LeadStatus, daysAgo: number];
+type SeedRow = [name: string, jobPosition: string, company: string, priority: Priority, stage: Stage, daysAgo: number];
 
 const ROWS: SeedRow[] = [
-  ["Harriet Lindqvist", "new_opportunity", "Google LSA", "Spring Tune-Up", "not_started", 0],
-  ["", "new_opportunity", "Facebook Messenger", "FB Lead Ads – Q4", "not_started", 0],
-  ["Dorian Wexley", "new_opportunity", "Email", "Newsletter", "not_started", 1],
-  ["Priya Ramanathan", "new_opportunity", "Website Form", "Free Estimate", "in_progress", 1],
-  ["", "new_opportunity", "Google LSA", "Emergency Repair", "not_started", 2],
-  ["Kasimir Brandt", "new_opportunity", "Phone Call", "Organic", "not_started", 0],
-  ["Felix Arbogast", "contacted", "Phone Call", "Organic", "in_progress", 3],
-  ["Noor Haddad", "contacted", "Facebook Messenger", "FB Lead Ads – Q4", "in_progress", 3],
-  ["Gideon Vale", "contacted", "Google LSA", "Spring Tune-Up", "not_started", 4],
-  ["Tamsin Okoro", "contacted", "Referral", "Partner Referral", "in_progress", 5],
-  ["Lucia Benedetti", "first_follow_up", "Website Form", "Free Estimate", "in_progress", 6],
-  ["Ansel Fairbanks", "first_follow_up", "Email", "Winter Promo", "in_progress", 7],
-  ["Leontyne Hargrove", "first_follow_up", "Facebook Messenger", "Retargeting", "in_progress", 9],
-  ["Wren Kowalczyk", "second_follow_up", "Google LSA", "Emergency Repair", "not_started", 8],
-  ["Ozzie Marchetti", "second_follow_up", "Facebook Messenger", "Retargeting", "not_started", 10],
-  ["Bettina Sorensen", "final_follow_up", "Email", "Newsletter", "in_progress", 12],
-  ["", "final_follow_up", "Website Form", "Free Estimate", "not_started", 14],
-  ["Ines Valcourt", "lost", "Facebook Messenger", "FB Lead Ads – Q4", "not_started", 20],
-  ["Bram Holloway", "lost", "Email", "Winter Promo", "not_started", 21],
-  ["Saoirse Delaney", "lost", "Google LSA", "Emergency Repair", "not_started", 22],
-  ["Elio Fontaine", "lost", "Website Form", "Free Estimate", "not_started", 25],
-  ["Cyrus Abernathy", "won", "Referral", "Partner Referral", "in_progress", 15],
-  ["Mirela Dragan", "won", "Google LSA", "Spring Tune-Up", "in_progress", 16],
-  ["Quentin Ashby", "won", "Phone Call", "Organic", "in_progress", 18],
-  ["Junie Calloway", "won", "Referral", "Partner Referral", "in_progress", 28],
+  ["Harriet Lindqvist", "Talent Acquisition Lead", "Bluepine Analytics", "High", "new_opportunity", 0],
+  ["", "Engineering Manager", "Copperleaf Studio", "Medium", "new_opportunity", 0],
+  ["Dorian Wexley", "Head of Product", "Harbor & Finch", "High", "new_opportunity", 1],
+  ["Priya Ramanathan", "Recruiter", "Lumen Fieldworks", "Low", "new_opportunity", 1],
+  ["Kasimir Brandt", "Hiring Manager, Data", "Quarry Lane Labs", "Medium", "new_opportunity", 2],
+  ["Felix Arbogast", "VP Operations", "Tidewater Logistics", "High", "contacted", 3],
+  ["Noor Haddad", "Technical Recruiter", "Brightmoor Health", "Medium", "contacted", 4],
+  ["Gideon Vale", "Design Director", "Saltgrass Media", "Low", "contacted", 5],
+  ["Tamsin Okoro", "People Partner", "Ironbark Systems", "High", "contacted", 6],
+  ["Lucia Benedetti", "Senior Recruiter", "Fernhollow Bank", "Medium", "first_follow_up", 8],
+  ["Ansel Fairbanks", "CTO", "Pebblecrest Software", "High", "first_follow_up", 9],
+  ["Leontyne Hargrove", "Hiring Manager", "Orchard Row Retail", "Low", "first_follow_up", 10],
+  ["Wren Kowalczyk", "Talent Partner", "Starling Robotics", "Medium", "second_follow_up", 13],
+  ["Ozzie Marchetti", "Engineering Lead", "Graniteview Energy", "Low", "second_follow_up", 14],
+  ["Bettina Sorensen", "Director of Analytics", "Northgate Civic", "High", "final_follow_up", 18],
+  ["", "Recruiting Coordinator", "Maplestone Group", "Low", "final_follow_up", 20],
+  ["Ines Valcourt", "Recruiter", "Cinderpath Games", "Medium", "lost", 25],
+  ["Bram Holloway", "Head of Talent", "Rivermark Insurance", "Low", "lost", 27],
+  ["Cyrus Abernathy", "Product Manager", "Willowbend Labs", "High", "won", 30],
+  ["Mirela Dragan", "Hiring Manager", "Sunfield Partners", "Medium", "won", 33],
 ];
 
 function slug(s: string) {
   return s.toLowerCase().replace(/[^a-z]+/g, ".").replace(/^\.|\.$/g, "");
 }
 
+function isoDay(d: Date) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+const AFTER_FIRST: Stage[] = ["contacted", "first_follow_up", "second_follow_up", "final_follow_up", "lost", "won"];
+const AFTER_SECOND: Stage[] = ["second_follow_up", "final_follow_up", "lost", "won"];
+
 export function buildSeedLeads(now = new Date()): Lead[] {
   const positions: Partial<Record<Stage, number>> = {};
-  return ROWS.map(([name, stage, source, campaign, status, daysAgo], i) => {
+  return ROWS.map(([name, jobPosition, company, priority, stage, daysAgo], i) => {
     const created = new Date(now);
     created.setDate(created.getDate() - daysAgo);
     created.setHours(8 + ((i * 3) % 10), (i * 17) % 60, 0, 0);
+    const first = new Date(created);
+    first.setDate(first.getDate() + 1);
+    const second = new Date(first);
+    second.setDate(second.getDate() + 5);
     const position = positions[stage] ?? 0;
     positions[stage] = position + 1;
-    const phoneTail = String(1000 + i * 37).slice(-4);
     return {
-      id: `lead-${i + 1}`,
+      id: `demo-${i + 1}`,
       name,
-      email: name ? `${slug(name)}@example.com` : `inquiry${i + 1}@example.com`,
-      phone: `(555) 01${String(i).padStart(2, "0")}-${phoneTail}`,
+      jobPosition,
+      priority,
+      email: name ? `${slug(name)}@example.com` : "",
+      phone: `(555) 01${String(i).padStart(2, "0")}-${String(1000 + i * 37).slice(-4)}`,
+      company,
+      firstContact: AFTER_FIRST.includes(stage) ? isoDay(first) : "",
+      secondContact: AFTER_SECOND.includes(stage) ? isoDay(second) : "",
       stage,
       position,
-      source,
-      campaign,
-      status,
       createdAt: created.toISOString(),
       updatedAt: created.toISOString(),
     };

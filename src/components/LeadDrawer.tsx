@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
-import type { Lead, LeadStatus, Stage } from "../types";
-import { SOURCES, STAGES, STAGE_BY_ID, STATUS_LABEL } from "../lib/constants";
+import type { Lead, Priority, Stage } from "../types";
+import { PRIORITIES, STAGES, STAGE_BY_ID } from "../lib/constants";
 import { formatDateTime } from "../lib/format";
 import type { DrawerTab } from "./LeadCard";
 
@@ -11,6 +11,18 @@ interface Props {
   onSave: (id: string, changes: Partial<Lead>) => void;
   onClose: () => void;
 }
+
+const EDITABLE: (keyof Lead)[] = [
+  "name",
+  "jobPosition",
+  "company",
+  "email",
+  "phone",
+  "stage",
+  "priority",
+  "firstContact",
+  "secondContact",
+];
 
 const inputCls =
   "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-200";
@@ -27,8 +39,10 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
 export function LeadDrawer({ lead, tab, onTabChange, onSave, onClose }: Props) {
   const [draft, setDraft] = useState<Lead>(lead);
 
-  // If a different lead is opened, reset the form.
-  useEffect(() => setDraft(lead), [lead]);
+  // If a different lead is opened, reset the form. (Keyed on id so a background
+  // refresh from the Sheet doesn't wipe what you're typing.)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => setDraft(lead), [lead.id]);
 
   // Close on Escape.
   useEffect(() => {
@@ -38,12 +52,15 @@ export function LeadDrawer({ lead, tab, onTabChange, onSave, onClose }: Props) {
   }, [onClose]);
 
   const set = <K extends keyof Lead>(key: K, value: Lead[K]) => setDraft((d) => ({ ...d, [key]: value }));
-  const dirty = JSON.stringify(draft) !== JSON.stringify(lead);
-  const sources = SOURCES.includes(draft.source) ? SOURCES : [draft.source, ...SOURCES];
+  const edited: Partial<Lead> = {};
+  for (const k of EDITABLE) {
+    const value = typeof draft[k] === "string" ? (draft[k] as string).trim() : draft[k];
+    if (value !== lead[k]) (edited as Record<string, unknown>)[k] = value;
+  }
+  const dirty = Object.keys(edited).length > 0;
 
   function save() {
-    const { name, email, phone, stage, source, campaign, status } = draft;
-    onSave(lead.id, { name: name.trim(), email: email.trim(), phone: phone.trim(), stage, source, campaign: campaign.trim(), status });
+    onSave(lead.id, edited);
     onClose();
   }
 
@@ -94,14 +111,22 @@ export function LeadDrawer({ lead, tab, onTabChange, onSave, onClose }: Props) {
         {tab === "details" ? (
           <>
             <div className="flex-1 space-y-4 overflow-y-auto px-5 py-4">
-              <Field label="Name">
+              <Field label="Contacts Name">
                 <input className={inputCls} value={draft.name} onChange={(e) => set("name", e.target.value)} placeholder="No Name Provided" />
               </Field>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Job Position">
+                  <input className={inputCls} value={draft.jobPosition} onChange={(e) => set("jobPosition", e.target.value)} />
+                </Field>
+                <Field label="Company">
+                  <input className={inputCls} value={draft.company} onChange={(e) => set("company", e.target.value)} />
+                </Field>
+              </div>
               <div className="grid grid-cols-2 gap-3">
                 <Field label="Email">
                   <input className={inputCls} type="email" value={draft.email} onChange={(e) => set("email", e.target.value)} />
                 </Field>
-                <Field label="Phone">
+                <Field label="Phone Number">
                   <input className={inputCls} type="tel" value={draft.phone} onChange={(e) => set("phone", e.target.value)} />
                 </Field>
               </div>
@@ -115,28 +140,23 @@ export function LeadDrawer({ lead, tab, onTabChange, onSave, onClose }: Props) {
                     ))}
                   </select>
                 </Field>
-                <Field label="Status">
-                  <select className={inputCls} value={draft.status} onChange={(e) => set("status", e.target.value as LeadStatus)}>
-                    {(Object.keys(STATUS_LABEL) as LeadStatus[]).map((s) => (
-                      <option key={s} value={s}>
-                        {STATUS_LABEL[s]}
+                <Field label="Priority">
+                  <select className={inputCls} value={draft.priority} onChange={(e) => set("priority", e.target.value as Priority)}>
+                    <option value="">None</option>
+                    {PRIORITIES.map((p) => (
+                      <option key={p} value={p}>
+                        {p}
                       </option>
                     ))}
                   </select>
                 </Field>
               </div>
               <div className="grid grid-cols-2 gap-3">
-                <Field label="Source">
-                  <select className={inputCls} value={draft.source} onChange={(e) => set("source", e.target.value)}>
-                    {sources.map((s) => (
-                      <option key={s} value={s}>
-                        {s}
-                      </option>
-                    ))}
-                  </select>
+                <Field label="Day of First Contact">
+                  <input className={inputCls} type="date" value={draft.firstContact} onChange={(e) => set("firstContact", e.target.value)} />
                 </Field>
-                <Field label="Campaign">
-                  <input className={inputCls} value={draft.campaign} onChange={(e) => set("campaign", e.target.value)} />
+                <Field label="Day of Second Contact">
+                  <input className={inputCls} type="date" value={draft.secondContact} onChange={(e) => set("secondContact", e.target.value)} />
                 </Field>
               </div>
               <dl className="grid grid-cols-2 gap-3 rounded-lg bg-slate-50 p-3 text-xs">

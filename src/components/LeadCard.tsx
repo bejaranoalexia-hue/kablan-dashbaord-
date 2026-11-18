@@ -1,8 +1,8 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { Lead } from "../types";
-import { STAGE_BY_ID, STATUS_LABEL } from "../lib/constants";
-import { formatDateTime } from "../lib/format";
+import { PRIORITY_STYLE, STAGE_BY_ID } from "../lib/constants";
+import { formatDateTime, formatDay } from "../lib/format";
 
 export type DrawerTab = "details" | "conversation";
 
@@ -15,7 +15,7 @@ interface Props {
 /** Visual card. Used both inside the column (sortable) and in the drag overlay. */
 export function LeadCardView({ lead, onOpen, overlay }: Props) {
   const stage = STAGE_BY_ID[lead.stage];
-  const inProgress = lead.status === "in_progress";
+  const role = [lead.jobPosition, lead.company].filter(Boolean).join(" · ");
   return (
     <div
       className={`rounded-lg border border-slate-200 bg-white p-3 shadow-sm ${
@@ -27,26 +27,30 @@ export function LeadCardView({ lead, onOpen, overlay }: Props) {
           <p className={`truncate text-sm font-semibold ${lead.name ? "text-slate-900" : "italic text-slate-400"}`}>
             {lead.name || "No Name Provided"}
           </p>
-          <p className="mt-0.5 text-xs text-slate-500">{formatDateTime(lead.createdAt)}</p>
+          {role && <p className="mt-0.5 truncate text-xs text-slate-600">{role}</p>}
+          <p className="mt-0.5 text-[11px] text-slate-400">Added {formatDateTime(lead.createdAt)}</p>
         </div>
         <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${stage.badge}`}>{stage.title}</span>
       </div>
 
-      <div className="mt-2 flex flex-wrap gap-1.5">
-        <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-700">{lead.source}</span>
-        {lead.campaign && (
-          <span className="rounded-md border border-slate-200 px-2 py-0.5 text-[11px] text-slate-600">{lead.campaign}</span>
+      <div className="mt-2 flex flex-wrap items-center gap-1.5">
+        {lead.priority && (
+          <span className={`rounded-md px-2 py-0.5 text-[11px] font-medium ${PRIORITY_STYLE[lead.priority]}`}>
+            {lead.priority} priority
+          </span>
         )}
       </div>
 
-      <div className="mt-3 flex items-center gap-2">
-        <span
-          className={`flex shrink-0 items-center gap-1 text-[11px] font-medium ${inProgress ? "text-sky-700" : "text-slate-500"}`}
-        >
-          <span className={`h-1.5 w-1.5 rounded-full ${inProgress ? "bg-sky-500" : "bg-slate-300"}`} />
-          {STATUS_LABEL[lead.status]}
-        </span>
-      </div>
+      <dl className="mt-2 grid grid-cols-2 gap-2 text-[11px]">
+        <div>
+          <dt className="text-slate-400">1st contact</dt>
+          <dd className="font-medium text-slate-700">{lead.firstContact ? formatDay(lead.firstContact) : "—"}</dd>
+        </div>
+        <div>
+          <dt className="text-slate-400">2nd contact</dt>
+          <dd className="font-medium text-slate-700">{lead.secondContact ? formatDay(lead.secondContact) : "—"}</dd>
+        </div>
+      </dl>
 
       <div className="mt-3 grid grid-cols-2 gap-2">
         <button
