@@ -1,6 +1,11 @@
 import { useState, type FormEvent } from "react";
 
-export function LoginScreen({ onLogin }: { onLogin: (password: string) => Promise<void> }) {
+interface Props {
+  onLogin: (password: string) => Promise<void>;
+  label?: { field: string; hint: string };
+}
+
+export function LoginScreen({ onLogin, label = { field: "Password", hint: "Enter your password to open your board" } }: Props) {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,11 +30,11 @@ export function LoginScreen({ onLogin }: { onLogin: (password: string) => Promis
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sky-600 text-sm font-bold text-white">LB</div>
           <div>
             <h1 className="text-base font-semibold text-slate-900">Lead Board</h1>
-            <p className="text-xs text-slate-500">Enter your password to open your board</p>
+            <p className="text-xs text-slate-500">{label.hint}</p>
           </div>
         </div>
         <label className="block">
-          <span className="mb-1 block text-xs font-medium text-slate-600">Password</span>
+          <span className="mb-1 block text-xs font-medium text-slate-600">{label.field}</span>
           <input
             type="password"
             autoFocus

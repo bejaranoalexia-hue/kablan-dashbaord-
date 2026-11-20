@@ -55,5 +55,7 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react(), tailwindcss(), localApi()],
     server: { port: 5173 },
+    // GitHub Pages serves the site from /<repository-name>/; the publish workflow sets this.
+    base: process.env.VITE_BASE || "/",
   };
 });

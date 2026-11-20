@@ -30,6 +30,7 @@ export default function App() {
     mode,
     needsLogin,
     passwordRequired,
+    loginLabel,
     login,
     logout,
     refresh,
@@ -44,7 +45,7 @@ export default function App() {
   const openLead = open ? leads.find((l) => l.id === open.id) : undefined;
   const close = useCallback(() => setOpen(null), []);
 
-  if (needsLogin) return <LoginScreen onLogin={login} />;
+  if (needsLogin) return <LoginScreen onLogin={login} label={loginLabel} />;
 
   return (
     <div className="flex h-screen flex-col">

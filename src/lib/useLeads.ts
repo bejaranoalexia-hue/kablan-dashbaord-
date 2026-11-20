@@ -201,6 +201,7 @@ export function useLeads() {
     mode,
     needsLogin,
     passwordRequired,
+    loginLabel: auth.label,
     login,
     logout,
     refresh,

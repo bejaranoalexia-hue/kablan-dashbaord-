@@ -1,15 +1,9 @@
 // Talks to our own server function (api/board.ts), which talks to the Google Sheet.
 // The Sheet URL and secret key live only on the server, never in the browser.
-import type { Lead } from "../../types";
-import { STAGE_BY_ID, priorityFromText, stageFromText } from "../constants";
 import type { LeadStore } from "./types";
+import { AuthRequiredError, NotConfiguredError, fromRow, toSheet, type Auth, type SheetRow } from "./shared";
 
 const ENDPOINT = "/api/board";
-
-/** The server wants a login first (no session, or it expired). */
-export class AuthRequiredError extends Error {}
-/** The server has no Sheet settings: fall back to demo data. */
-export class NotConfiguredError extends Error {}
 
 type Reply = { ok: boolean; code?: string; error?: string; [k: string]: unknown };
 
@@ -39,38 +33,6 @@ async function post(body: object): Promise<Reply> {
   return data;
 }
 
-/** A row as the Apps Script sends it: every value is a string. */
-type SheetRow = Record<keyof Lead, string>;
-
-function fromRow(r: SheetRow): Lead {
-  const position = r.position === "" ? NaN : Number(r.position);
-  return {
-    id: r.id,
-    name: r.name ?? "",
-    jobPosition: r.jobPosition ?? "",
-    priority: priorityFromText(r.priority ?? ""),
-    email: r.email ?? "",
-    phone: r.phone ?? "",
-    company: r.company ?? "",
-    firstContact: r.firstContact ?? "",
-    secondContact: r.secondContact ?? "",
-    stage: stageFromText(r.stage ?? ""),
-    position: Number.isFinite(position) ? position : -1, // -1 = new row, goes to the top
-    createdAt: r.createdAt || new Date().toISOString(),
-    updatedAt: r.updatedAt || r.createdAt || new Date().toISOString(),
-  };
-}
-
-/** Convert app values to what should appear in the Sheet cells. */
-function toSheet(changes: Partial<Lead>): Record<string, string | number> {
-  const out: Record<string, string | number> = {};
-  for (const [key, value] of Object.entries(changes)) {
-    if (key === "stage") out.stage = STAGE_BY_ID[value as Lead["stage"]].title;
-    else out[key] = value as string | number;
-  }
-  return out;
-}
-
 export const apiStore: LeadStore = {
   kind: "sheet",
   async load() {
@@ -82,9 +44,9 @@ export const apiStore: LeadStore = {
   },
 };
 
-export const auth = {
-  /** Does this server use a password at all? (Not when running locally without one.) */
-  async passwordRequired(): Promise<boolean> {
+export const apiAuth: Auth = {
+  label: { field: "Password", hint: "Enter your password to open your board" },
+  async passwordRequired() {
     try {
       const res = await fetch(ENDPOINT, { credentials: "same-origin" });
       const data = (await res.json()) as { passwordRequired?: boolean };
@@ -93,7 +55,7 @@ export const auth = {
       return false;
     }
   },
-  async login(password: string) {
+  async login(password) {
     await post({ action: "login", password });
   },
   async logout() {
