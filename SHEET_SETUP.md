@@ -22,7 +22,7 @@ You can change **Stage** by hand (for example to `Contacted`). Leave **Order, Le
 2. Delete everything in the editor, then paste in the whole contents of [`apps-script/Code.gs`](apps-script/Code.gs).
 3. Click the **Save** icon (💾).
 4. Add your secret key as a **Script Property**:
-   1. Open the project's `.env.local` file and copy the long value after `VITE_SHEET_KEY=`.
+   1. Open the project's `.env.local` file and copy the long value after `SHEET_KEY=`.
    2. In the Apps Script editor, click **Project Settings** (the ⚙ gear in the left sidebar).
    3. Scroll down to **Script Properties** and click **Add script property** (or **Edit script properties**).
    4. **Property:** `SECRET`. **Value:** paste the key, with no spaces or quotes.
@@ -46,7 +46,7 @@ You can change **Stage** by hand (for example to `Contacted`). Leave **Order, Le
 
 ## 4. Connect the board
 
-1. Open `.env.local` in the project folder and paste the URL after `VITE_SHEET_URL=`.
+1. Open `.env.local` in the project folder and paste the URL after `SHEET_URL=`.
 2. In the terminal running the board, press `Ctrl+C`, then start it again:
 
    ```powershell
@@ -66,7 +66,7 @@ You can change **Stage** by hand (for example to `Contacted`). Leave **Order, Le
 
 | Message on the board | What to do |
 | --- | --- |
-| "Wrong key." | The `SECRET` script property doesn't match `VITE_SHEET_KEY` in `.env.local`. Check for extra spaces, quotes or a different property name. Fixing a script property takes effect right away, with no redeploy needed. |
+| "Wrong key." | The `SECRET` script property doesn't match `SHEET_KEY` in `.env.local`. Check for extra spaces, quotes or a different property name. Fixing a script property takes effect right away, with no redeploy needed. |
 | "SECRET is not set in the Apps Script" | No script property named exactly `SECRET` (all capitals) exists yet. Add it as in step 2.4. |
 | "didn't send back data" | The deployment's "Who has access" isn't **Anyone**, or the URL isn't the `/exec` one. |
 | Still says "Demo data" | `.env.local` is missing the URL or key, or you didn't restart `npm run dev`. |
@@ -75,7 +75,8 @@ You can change **Stage** by hand (for example to `Contacted`). Leave **Order, Le
 The URL stays the same.
 
 **About privacy:** anyone who has both the web app URL and the key can read and change the Sheet's leads.
-Don't share those two values, and don't put sensitive information in the Sheet.
+Don't share those two values. The board keeps them on its server side (`api/board.ts`), so they are
+never sent to the browser. To use the board online, see [DEPLOY.md](DEPLOY.md).
 
 ## Testing without Google (for development)
 

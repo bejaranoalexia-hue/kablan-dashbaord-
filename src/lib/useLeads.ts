@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Lead, Stage } from "../types";
 import { STAGES } from "./constants";
-import { store, type LeadChange } from "./storage";
+import { auth, AuthRequiredError, store, type LeadChange } from "./storage";
 
 export type Columns = Record<Stage, string[]>;
 
@@ -45,6 +45,20 @@ export function useLeads() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastSynced, setLastSynced] = useState<Date | null>(null);
+  const [mode, setMode] = useState(store.kind);
+  const [needsLogin, setNeedsLogin] = useState(false);
+  const [passwordRequired, setPasswordRequired] = useState(false);
+
+  /** Turn an error into the right screen: login form, or a message. */
+  const handleError = useCallback((e: unknown) => {
+    if (e instanceof AuthRequiredError) {
+      setNeedsLogin(true);
+      setPasswordRequired(true);
+      setError(null);
+    } else {
+      setError(e instanceof Error ? e.message : String(e));
+    }
+  }, []);
 
   const leadsRef = useRef<Lead[]>([]);
   const pending = useRef(0);
@@ -66,12 +80,12 @@ export function useLeads() {
         setError(null);
         setLastSynced(new Date());
       })
-      .catch((e: unknown) => setError(e instanceof Error ? e.message : String(e)))
+      .catch(handleError)
       .finally(() => {
         pending.current--;
         if (pending.current === 0) setSaving(false);
       });
-  }, []);
+  }, [handleError]);
 
   /** Show a new version of the leads and save whatever changed. */
   const commit = useCallback(
@@ -88,6 +102,8 @@ export function useLeads() {
     if (pending.current > 0) return; // don't overwrite changes that are still saving
     try {
       const raw = await store.load();
+      setMode(store.kind);
+      setNeedsLogin(false);
       if (pending.current > 0) return;
       const clean = renumber(raw);
       show(clean);
@@ -96,15 +112,19 @@ export function useLeads() {
       // Hand-typed rows have no order yet: save the order they were given.
       queueSave(diff(raw, clean));
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      handleError(e);
     } finally {
       setLoading(false);
     }
-  }, [queueSave]);
+  }, [queueSave, handleError]);
 
   useEffect(() => {
     void refresh();
-    if (store.kind !== "sheet") return;
+    void auth.passwordRequired().then(setPasswordRequired);
+  }, [refresh]);
+
+  useEffect(() => {
+    if (mode !== "sheet" || needsLogin) return;
     // Coming back to this tab (e.g. from the Sheet) or every minute: check for new rows.
     const onFocus = () => void refresh();
     window.addEventListener("focus", onFocus);
@@ -113,7 +133,26 @@ export function useLeads() {
       window.removeEventListener("focus", onFocus);
       window.clearInterval(timer);
     };
-  }, [refresh]);
+  }, [refresh, mode, needsLogin]);
+
+  const login = useCallback(
+    async (password: string) => {
+      await auth.login(password); // throws "Wrong password." on failure
+      setNeedsLogin(false);
+      setLoading(true);
+      await refresh();
+    },
+    [refresh],
+  );
+
+  const logout = useCallback(async () => {
+    try {
+      await auth.logout();
+    } finally {
+      show([]);
+      setNeedsLogin(true);
+    }
+  }, []);
 
   /** Apply a new column layout (after drag and drop): rewrite stage + position. */
   const applyColumns = useCallback(
@@ -159,10 +198,14 @@ export function useLeads() {
     saving,
     error,
     lastSynced,
-    mode: store.kind,
+    mode,
+    needsLogin,
+    passwordRequired,
+    login,
+    logout,
     refresh,
     applyColumns,
     updateLead,
-    reset: store.reset ? reset : undefined,
+    reset: mode === "demo" ? reset : undefined,
   };
 }

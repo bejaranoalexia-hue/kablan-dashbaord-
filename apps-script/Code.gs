@@ -13,7 +13,7 @@
  * filled in automatically the next time the board loads.
  */
 
-// The secret key must match VITE_SHEET_KEY in the project's .env.local file.
+// The secret key must match SHEET_KEY in the project's .env.local file.
 // Recommended: store it as a Script Property named SECRET
 //   (Project Settings ⚙ → Script properties → Add script property).
 // The property wins if it's set. Otherwise the value on the next line is used.

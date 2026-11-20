@@ -5,6 +5,7 @@ import { Board } from "./components/Board";
 import { Toolbar, type Filters } from "./components/Toolbar";
 import { LeadDrawer } from "./components/LeadDrawer";
 import { SyncStatus } from "./components/SyncStatus";
+import { LoginScreen } from "./components/LoginScreen";
 import type { DrawerTab } from "./components/LeadCard";
 
 function matches(lead: Lead, f: Filters) {
@@ -20,13 +21,30 @@ function matches(lead: Lead, f: Filters) {
 }
 
 export default function App() {
-  const { leads, loading, saving, error, lastSynced, mode, refresh, applyColumns, updateLead, reset } = useLeads();
+  const {
+    leads,
+    loading,
+    saving,
+    error,
+    lastSynced,
+    mode,
+    needsLogin,
+    passwordRequired,
+    login,
+    logout,
+    refresh,
+    applyColumns,
+    updateLead,
+    reset,
+  } = useLeads();
   const [filters, setFilters] = useState<Filters>({ search: "", priority: "" });
   const [open, setOpen] = useState<{ id: string; tab: DrawerTab } | null>(null);
 
   const visibleIds = useMemo(() => new Set(leads.filter((l) => matches(l, filters)).map((l) => l.id)), [leads, filters]);
   const openLead = open ? leads.find((l) => l.id === open.id) : undefined;
   const close = useCallback(() => setOpen(null), []);
+
+  if (needsLogin) return <LoginScreen onLogin={login} />;
 
   return (
     <div className="flex h-screen flex-col">
@@ -36,8 +54,17 @@ export default function App() {
           <h1 className="text-base font-semibold text-slate-900">Lead Board</h1>
           <p className="text-xs text-slate-500">Drag leads between stages to track your job prospects</p>
         </div>
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-2">
           <SyncStatus mode={mode} loading={loading} saving={saving} error={error} lastSynced={lastSynced} onRefresh={refresh} />
+          {passwordRequired && (
+            <button
+              type="button"
+              onClick={() => void logout()}
+              className="rounded-lg px-3 py-1 text-xs font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+            >
+              Log out
+            </button>
+          )}
         </div>
       </header>
       {error && (

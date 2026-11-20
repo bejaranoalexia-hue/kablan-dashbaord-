@@ -5,7 +5,7 @@
 //   GET  /__sheet           show the fake sheet's cells
 //   POST /__append  {...}   add a row as if typed by hand, e.g. {"Contacts Name":"Ada","Company":"Acme"}
 //
-// Point .env.local at it with VITE_SHEET_URL=http://localhost:8787 and VITE_SHEET_KEY=local-test-key
+// Point .env.local at it with SHEET_URL=http://localhost:8787 and SHEET_KEY=local-test-key
 import { createServer } from "node:http";
 import { readFileSync } from "node:fs";
 import { randomUUID } from "node:crypto";
