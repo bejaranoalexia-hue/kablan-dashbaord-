@@ -106,7 +106,7 @@ export async function GET(request: Request) {
   });
 }
 
-/** POST /api/board with {action: "login" | "logout" | "list" | "update", ...}. */
+/** POST /api/board with {action: "login" | "logout" | "list" | "update" | "activity", ...}. */
 export async function POST(request: Request) {
   let body: Json;
   try {
@@ -142,6 +142,10 @@ export async function POST(request: Request) {
   }
 
   if (body.action === "list") return json(await callSheet({ action: "list" }));
+  if (body.action === "activity") {
+    if (typeof body.id !== "string" || !body.id) return json({ ok: false, error: "Bad request." }, 400);
+    return json(await callSheet({ action: "activity", id: body.id }));
+  }
   if (body.action === "update") {
     if (!Array.isArray(body.leads)) return json({ ok: false, error: "Bad request." }, 400);
     return json(await callSheet({ action: "update", leads: body.leads }));

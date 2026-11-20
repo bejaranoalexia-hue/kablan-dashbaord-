@@ -27,7 +27,12 @@ export let auth: Auth;
 if (isStatic) {
   if (staticUrl) ({ store: remote, auth } = createDirectStore(staticUrl));
   else {
-    remote = { kind: "sheet", load: () => Promise.reject(new NotConfiguredError()), save: async () => {} };
+    remote = {
+      kind: "sheet",
+      load: () => Promise.reject(new NotConfiguredError()),
+      save: async () => {},
+      activity: async () => [],
+    };
     auth = noLogin;
   }
 } else {
@@ -54,6 +59,20 @@ export const store: LeadStore = {
   },
   save(changes) {
     return demo ? localStore.save(changes) : remote.save(changes);
+  },
+  async activity(id) {
+    if (demo) return localStore.activity(id);
+    try {
+      return await remote.activity(id);
+    } catch (e) {
+      // An Apps Script deployed before the live feed existed doesn't know this request.
+      if (e instanceof Error && e.message.includes("Unknown action")) {
+        throw new Error(
+          "Your Apps Script needs updating to show the live feed: paste the new Code.gs and deploy a new version.",
+        );
+      }
+      throw e;
+    }
   },
   reset() {
     return localStore.reset!();

@@ -41,7 +41,7 @@ export function Board({ leads, visibleIds, onColumnsChange, onOpen }: Props) {
   const cols = dragCols ?? toColumns(leads);
 
   const sensors = useSensors(
-    // A small distance means a simple click on Details/Conversation is not treated as a drag.
+    // A small distance means a simple click on Details/Live feed is not treated as a drag.
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );

@@ -187,6 +187,19 @@ export function useLeads() {
     [commit],
   );
 
+  /** A lead's live feed, newest first. */
+  const loadActivity = useCallback(
+    async (id: string) => {
+      try {
+        return await store.activity(id);
+      } catch (e) {
+        if (e instanceof AuthRequiredError) handleError(e);
+        throw e;
+      }
+    },
+    [handleError],
+  );
+
   const reset = useCallback(async () => {
     await store.reset?.();
     await refresh();
@@ -207,6 +220,7 @@ export function useLeads() {
     refresh,
     applyColumns,
     updateLead,
+    loadActivity,
     reset: mode === "demo" ? reset : undefined,
   };
 }

@@ -4,7 +4,7 @@ import type { Lead } from "../types";
 import { PRIORITY_STYLE, STAGE_BY_ID } from "../lib/constants";
 import { formatDateTime, formatDay } from "../lib/format";
 
-export type DrawerTab = "details" | "conversation";
+export type DrawerTab = "details" | "feed";
 
 interface Props {
   lead: Lead;
@@ -62,10 +62,10 @@ export function LeadCardView({ lead, onOpen, overlay }: Props) {
         </button>
         <button
           type="button"
-          onClick={() => onOpen(lead, "conversation")}
+          onClick={() => onOpen(lead, "feed")}
           className="rounded-md border border-slate-200 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
         >
-          Conversation
+          Live feed
         </button>
       </div>
     </div>

@@ -1,5 +1,6 @@
 // Talks to our own server function (api/board.ts), which talks to the Google Sheet.
 // The Sheet URL and secret key live only on the server, never in the browser.
+import type { ActivityEntry } from "../../types";
 import type { LeadStore } from "./types";
 import { AuthRequiredError, NotConfiguredError, fromRow, toSheet, type Auth, type SheetRow } from "./shared";
 
@@ -41,6 +42,10 @@ export const apiStore: LeadStore = {
   },
   async save(changes) {
     await post({ action: "update", leads: changes.map((c) => ({ id: c.id, ...toSheet(c.changes) })) });
+  },
+  async activity(id) {
+    const data = await post({ action: "activity", id });
+    return (data.activity as ActivityEntry[] | undefined) ?? [];
   },
 };
 

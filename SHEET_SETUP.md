@@ -61,6 +61,9 @@ You can change **Stage** by hand (for example to `Contacted`). Leave **Order, Le
   every minute, or when you click **Refresh**. New rows land in **New Opportunity**.
 - **Move or edit a lead:** do it on the board. It's saved to the Sheet within a second or two.
 - **Delete a lead:** delete its row in the Sheet.
+- **See what changed:** open a card's **Live feed**. Every stage move, edit and newly added detail is listed there,
+  whether it was made on the board or typed in the Sheet. The history is kept in a second tab of your Sheet called
+  **Activity**, which the script creates by itself. Changes are tracked from the moment you install this version of the script.
 
 ## If something goes wrong
 

@@ -2,6 +2,7 @@
 // The web app URL is built into the page (it's useless without the key).
 // The secret key is NOT in the page: you type it on the login screen, and this
 // browser remembers it until you click "Log out".
+import type { ActivityEntry } from "../../types";
 import type { LeadStore } from "./types";
 import { AuthRequiredError, fromRow, toSheet, type Auth, type SheetRow } from "./shared";
 
@@ -27,7 +28,7 @@ function rememberKey(key: string | null) {
 // Kept in memory too, so the board works even where localStorage is blocked.
 let sessionKey = "";
 
-type Reply = { ok: boolean; error?: string; leads?: SheetRow[] };
+type Reply = { ok: boolean; error?: string; leads?: SheetRow[]; activity?: ActivityEntry[] };
 
 export function createDirectStore(url: string): { store: LeadStore; auth: Auth } {
   async function call(body: object, key: string): Promise<Reply> {
@@ -77,6 +78,10 @@ export function createDirectStore(url: string): { store: LeadStore; auth: Auth }
     },
     async save(changes) {
       await call({ action: "update", leads: changes.map((c) => ({ id: c.id, ...toSheet(c.changes) })) }, key());
+    },
+    async activity(id) {
+      const data = await call({ action: "activity", id }, key());
+      return data.activity ?? [];
     },
   };
 

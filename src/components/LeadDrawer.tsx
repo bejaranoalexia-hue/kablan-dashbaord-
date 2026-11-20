@@ -1,14 +1,17 @@
 import { useEffect, useState, type ReactNode } from "react";
-import type { Lead, Priority, Stage } from "../types";
+import type { ActivityEntry, Lead, Priority, Stage } from "../types";
 import { PRIORITIES, STAGES, STAGE_BY_ID } from "../lib/constants";
 import { formatDateTime } from "../lib/format";
 import type { DrawerTab } from "./LeadCard";
+import { ActivityFeed } from "./ActivityFeed";
 
 interface Props {
   lead: Lead;
   tab: DrawerTab;
   onTabChange: (tab: DrawerTab) => void;
   onSave: (id: string, changes: Partial<Lead>) => void;
+  loadActivity: (id: string) => Promise<ActivityEntry[]>;
+  refreshSignal: unknown;
   onClose: () => void;
 }
 
@@ -36,7 +39,7 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-export function LeadDrawer({ lead, tab, onTabChange, onSave, onClose }: Props) {
+export function LeadDrawer({ lead, tab, onTabChange, onSave, onClose, loadActivity, refreshSignal }: Props) {
   const [draft, setDraft] = useState<Lead>(lead);
 
   // If a different lead is opened, reset the form. (Keyed on id so a background
@@ -93,16 +96,21 @@ export function LeadDrawer({ lead, tab, onTabChange, onSave, onClose }: Props) {
             </button>
           </div>
           <nav className="mt-3 flex gap-4 text-sm">
-            {(["details", "conversation"] as const).map((t) => (
+            {(
+              [
+                ["details", "Details"],
+                ["feed", "Live feed"],
+              ] as const
+            ).map(([t, label]) => (
               <button
                 key={t}
                 type="button"
                 onClick={() => onTabChange(t)}
-                className={`-mb-px border-b-2 pb-2 font-medium capitalize ${
+                className={`-mb-px border-b-2 pb-2 font-medium ${
                   tab === t ? "border-sky-600 text-sky-700" : "border-transparent text-slate-500 hover:text-slate-700"
                 }`}
               >
-                {t}
+                {label}
               </button>
             ))}
           </nav>
@@ -185,21 +193,7 @@ export function LeadDrawer({ lead, tab, onTabChange, onSave, onClose }: Props) {
             </footer>
           </>
         ) : (
-          <div className="flex flex-1 flex-col items-center justify-center px-8 text-center">
-            <div className="mb-3 rounded-full bg-slate-100 p-3 text-slate-400">
-              <svg viewBox="0 0 20 20" fill="currentColor" className="h-6 w-6" aria-hidden="true">
-                <path
-                  fillRule="evenodd"
-                  d="M2 5a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3H8.4l-3.7 3.1A.75.75 0 0 1 3.5 16.5V14A3 3 0 0 1 2 11.4V5Z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </div>
-            <p className="text-sm font-medium text-slate-700">No messages yet</p>
-            <p className="mt-1 text-xs text-slate-500">
-              Conversation history will show up here once lead intake (email, Messenger, etc.) is connected.
-            </p>
-          </div>
+          <ActivityFeed leadId={lead.id} load={loadActivity} refreshSignal={refreshSignal} />
         )}
       </aside>
     </div>

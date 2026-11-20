@@ -12,6 +12,18 @@ export type Stage =
 
 export type Priority = "High" | "Medium" | "Low" | "";
 
+/** One line in a lead's live feed (stored in the Sheet's "Activity" tab). */
+export interface ActivityEntry {
+  time: string; // ISO date string
+  leadId: string;
+  contact: string; // the lead's name at the time
+  change: "created" | "stage" | "added" | "changed" | "removed";
+  field: string; // a Lead field name, e.g. "email" ("" for "created")
+  oldValue: string;
+  newValue: string;
+  source: "board" | "sheet";
+}
+
 export interface Lead {
   id: string;
   name: string; // "Contacts Name"; may be empty -> shown as "No Name Provided"

@@ -1,7 +1,7 @@
 // Pieces shared by the two ways of reaching the Google Sheet:
 //   api.ts    -> through our server function (local dev, or a host like Vercel)
 //   direct.ts -> straight from the browser (static hosting like GitHub Pages)
-import type { Lead } from "../../types";
+import type { ActivityEntry, Lead } from "../../types";
 import { STAGE_BY_ID, priorityFromText, stageFromText } from "../constants";
 
 /** A login is needed (no session / no key saved, or it was rejected). */
@@ -17,6 +17,27 @@ export interface Auth {
   logout(): Promise<void>;
   /** Words for the login screen. */
   label: { field: string; hint: string };
+}
+
+/** Fields whose changes appear in the live feed (same list as in Code.gs). */
+export const TRACKED_FIELDS: (keyof Lead)[] = [
+  "name",
+  "jobPosition",
+  "priority",
+  "email",
+  "phone",
+  "company",
+  "firstContact",
+  "secondContact",
+  "stage",
+];
+
+/** Same rules as activityEntry() in Code.gs. */
+export function changeKind(field: string, oldValue: string, newValue: string): ActivityEntry["change"] {
+  if (field === "stage") return "stage";
+  if (!oldValue && newValue) return "added";
+  if (oldValue && !newValue) return "removed";
+  return "changed";
 }
 
 /** A row as the Apps Script sends it: every value is a string. */

@@ -1,4 +1,4 @@
-import type { Lead } from "../../types";
+import type { ActivityEntry, Lead } from "../../types";
 
 /** One lead's changed fields, sent to the store after a drag or an edit. */
 export interface LeadChange {
@@ -14,5 +14,7 @@ export interface LeadStore {
   kind: "sheet" | "demo";
   load(): Promise<Lead[]>;
   save(changes: LeadChange[]): Promise<void>;
+  /** A lead's change history, newest first. */
+  activity(id: string): Promise<ActivityEntry[]>;
   reset?(): Promise<void>; // demo only: restore sample data
 }

@@ -28,6 +28,19 @@ export function stageFromText(text: string): Stage {
   return match ? match.id : "new_opportunity";
 }
 
+/** Labels for lead fields, matching the Sheet's column headers. */
+export const FIELD_LABEL: Record<string, string> = {
+  name: "Contacts Name",
+  jobPosition: "Job Position",
+  priority: "Priority",
+  email: "Email",
+  phone: "Phone Number",
+  company: "Company",
+  firstContact: "Day of First Contact",
+  secondContact: "Day of Second Contact",
+  stage: "Stage",
+};
+
 export const PRIORITIES: Exclude<Priority, "">[] = ["High", "Medium", "Low"];
 
 export const PRIORITY_STYLE: Record<Priority, string> = {
