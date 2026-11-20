@@ -4,6 +4,7 @@
 //   node scripts/fake-sheet-server.mjs            -> http://localhost:8787
 //   GET  /__sheet            show the leads tab's cells
 //   GET  /__activity         show the Activity tab's cells
+//   GET  /__updates          show the Updates tab's cells
 //   POST /__append  {...}    add a row as if typed by hand, e.g. {"Contacts Name":"Ada","Company":"Acme"}
 //   POST /__edit {row, header, value}
 //                            type into one cell as if in the Sheet (runs the script's onEdit)
@@ -34,6 +35,7 @@ function makeSheet(name, grid) {
   const sheet = {
     grid,
     getName: () => name,
+    deleteRow: (r) => grid.splice(r - 1, 1),
     getLastRow: () => {
       for (let r = grid.length; r > 0; r--) if (grid[r - 1].some((c) => c !== "" && c != null)) return r;
       return 0;
@@ -139,6 +141,7 @@ createServer(async (req, res) => {
   };
   if (req.url === "/__sheet") return send(leads.grid);
   if (req.url === "/__activity") return send(sheets.find((s) => s.getName() === "Activity")?.grid ?? []);
+  if (req.url === "/__updates") return send(sheets.find((s) => s.getName() === "Updates")?.grid ?? []);
   if (req.url === "/__append" && req.method === "POST") {
     const values = JSON.parse(await readBody(req));
     leads.grid.push(leads.grid[0].map((h) => (h in values ? cellValue(values[h]) : "")));

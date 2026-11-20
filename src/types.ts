@@ -24,6 +24,14 @@ export interface ActivityEntry {
   source: "board" | "sheet";
 }
 
+/** A note you wrote about a lead (stored in the Sheet's "Updates" tab). */
+export interface LeadUpdate {
+  id: string;
+  leadId: string;
+  time: string; // ISO date string: when it was posted
+  text: string;
+}
+
 export interface Lead {
   id: string;
   name: string; // "Contacts Name"; may be empty -> shown as "No Name Provided"

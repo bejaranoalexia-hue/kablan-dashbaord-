@@ -106,7 +106,7 @@ export async function GET(request: Request) {
   });
 }
 
-/** POST /api/board with {action: "login" | "logout" | "list" | "update" | "activity", ...}. */
+/** POST /api/board with {action: "login" | "logout" | "list" | "update" | "activity" | "updates" | "addUpdate" | "deleteUpdate", ...}. */
 export async function POST(request: Request) {
   let body: Json;
   try {
@@ -142,9 +142,19 @@ export async function POST(request: Request) {
   }
 
   if (body.action === "list") return json(await callSheet({ action: "list" }));
-  if (body.action === "activity") {
+  if (body.action === "activity" || body.action === "updates") {
     if (typeof body.id !== "string" || !body.id) return json({ ok: false, error: "Bad request." }, 400);
-    return json(await callSheet({ action: "activity", id: body.id }));
+    return json(await callSheet({ action: body.action, id: body.id }));
+  }
+  if (body.action === "addUpdate") {
+    if (typeof body.id !== "string" || !body.id || typeof body.text !== "string") {
+      return json({ ok: false, error: "Bad request." }, 400);
+    }
+    return json(await callSheet({ action: "addUpdate", id: body.id, text: body.text }));
+  }
+  if (body.action === "deleteUpdate") {
+    if (typeof body.updateId !== "string" || !body.updateId) return json({ ok: false, error: "Bad request." }, 400);
+    return json(await callSheet({ action: "deleteUpdate", updateId: body.updateId }));
   }
   if (body.action === "update") {
     if (!Array.isArray(body.leads)) return json({ ok: false, error: "Bad request." }, 400);

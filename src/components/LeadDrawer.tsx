@@ -4,6 +4,7 @@ import { PRIORITIES, STAGES, STAGE_BY_ID } from "../lib/constants";
 import { formatDateTime } from "../lib/format";
 import type { DrawerTab } from "./LeadCard";
 import { ActivityFeed } from "./ActivityFeed";
+import { UpdatesPanel, type UpdatesApi } from "./UpdatesPanel";
 
 interface Props {
   lead: Lead;
@@ -11,6 +12,7 @@ interface Props {
   onTabChange: (tab: DrawerTab) => void;
   onSave: (id: string, changes: Partial<Lead>) => void;
   loadActivity: (id: string) => Promise<ActivityEntry[]>;
+  updates: UpdatesApi;
   refreshSignal: unknown;
   onClose: () => void;
 }
@@ -39,7 +41,7 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-export function LeadDrawer({ lead, tab, onTabChange, onSave, onClose, loadActivity, refreshSignal }: Props) {
+export function LeadDrawer({ lead, tab, onTabChange, onSave, onClose, loadActivity, updates, refreshSignal }: Props) {
   const [draft, setDraft] = useState<Lead>(lead);
 
   // If a different lead is opened, reset the form. (Keyed on id so a background
@@ -99,6 +101,7 @@ export function LeadDrawer({ lead, tab, onTabChange, onSave, onClose, loadActivi
             {(
               [
                 ["details", "Details"],
+                ["updates", "Updates"],
                 ["feed", "Live feed"],
               ] as const
             ).map(([t, label]) => (
@@ -192,6 +195,8 @@ export function LeadDrawer({ lead, tab, onTabChange, onSave, onClose, loadActivi
               </button>
             </footer>
           </>
+        ) : tab === "updates" ? (
+          <UpdatesPanel leadId={lead.id} api={updates} />
         ) : (
           <ActivityFeed leadId={lead.id} load={loadActivity} refreshSignal={refreshSignal} />
         )}

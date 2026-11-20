@@ -1,6 +1,6 @@
 // Demo store: keeps leads (and their live feed) in this browser's localStorage.
 // Used when no Google Sheet is configured.
-import type { ActivityEntry, Lead } from "../../types";
+import type { ActivityEntry, Lead, LeadUpdate } from "../../types";
 import { buildSeedLeads } from "../../data/seed";
 import { STAGE_BY_ID } from "../constants";
 import { TRACKED_FIELDS, changeKind } from "./shared";
@@ -8,6 +8,7 @@ import type { LeadStore } from "./types";
 
 const KEY = "lead-board:demo-leads:v3";
 const ACTIVITY_KEY = "lead-board:demo-activity:v1";
+const UPDATES_KEY = "lead-board:demo-updates:v1";
 
 function readJson<T>(key: string, fallback: () => T): T {
   try {
@@ -74,10 +75,34 @@ export const localStore: LeadStore = {
       .reverse()
       .slice(0, 100);
   },
+  async updates(id) {
+    return readJson<LeadUpdate[]>(UPDATES_KEY, () => [])
+      .filter((u) => u.leadId === id)
+      .reverse();
+  },
+  async addUpdate(id, text) {
+    const clean = text.replace(/\r\n/g, "\n").trim();
+    if (!clean) throw new Error("The update is empty.");
+    const entry: LeadUpdate = {
+      id: `U-${Math.random().toString(36).slice(2, 10)}`,
+      leadId: id,
+      time: new Date().toISOString(),
+      text: clean,
+    };
+    writeJson(UPDATES_KEY, [...readJson<LeadUpdate[]>(UPDATES_KEY, () => []), entry]);
+    return entry;
+  },
+  async deleteUpdate(updateId) {
+    writeJson(
+      UPDATES_KEY,
+      readJson<LeadUpdate[]>(UPDATES_KEY, () => []).filter((u) => u.id !== updateId),
+    );
+  },
   async reset() {
     try {
       localStorage.removeItem(KEY);
       localStorage.removeItem(ACTIVITY_KEY);
+      localStorage.removeItem(UPDATES_KEY);
     } catch {
       /* ignore */
     }

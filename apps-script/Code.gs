@@ -10,9 +10,12 @@
  *  - {key, action: "list"}                 → returns every lead row
  *  - {key, action: "update", leads: [...]} → updates the matching rows (matched by "Lead ID")
  *  - {key, action: "activity", id}         → that lead's change history, newest first
+ *  - {key, action: "updates", id}          → that lead's written updates (notes), newest first
+ *  - {key, action: "addUpdate", id, text}  → post a new update; {key, action: "deleteUpdate", updateId}
  * Rows you type in by hand get a Lead ID, Stage "New Opportunity" and Created At
  * filled in automatically the next time the board loads.
  *
+ * Notes you post on the board are kept in an "Updates" tab (created automatically).
  * Every change is written to an "Activity" tab (created automatically):
  * changes made on the board, edits typed directly in the Sheet (via onEdit), and new rows.
  */
@@ -30,6 +33,12 @@ const SHEET_NAME = 'Leads';
 const ACTIVITY_SHEET_NAME = 'Activity';
 const ACTIVITY_HEADERS = ['Time', 'Lead ID', 'Contact', 'Change', 'Field', 'Old Value', 'New Value', 'Source'];
 const ACTIVITY_LIMIT = 100; // most recent entries returned per lead
+
+// Name of the tab that holds the notes ("updates") you write about each contact.
+const UPDATES_SHEET_NAME = 'Updates';
+const UPDATES_HEADERS = ['Time', 'Lead ID', 'Contact', 'Update', 'Update ID'];
+const UPDATES_LIMIT = 200; // most recent updates returned per lead
+const UPDATE_MAX_LENGTH = 5000; // characters
 
 // Columns, in the order they are created on a blank sheet.
 // [field name used by the app, header text in the Sheet]
@@ -79,6 +88,9 @@ function doPost(e) {
     if (body.action === 'list') return { ok: true, leads: readLeads() };
     if (body.action === 'update') return { ok: true, updated: updateLeads(body.leads || []) };
     if (body.action === 'activity') return { ok: true, activity: readActivity(String(body.id || '')) };
+    if (body.action === 'updates') return { ok: true, updates: readUpdates(String(body.id || '')) };
+    if (body.action === 'addUpdate') return { ok: true, update: addUpdate(String(body.id || ''), String(body.text || '')) };
+    if (body.action === 'deleteUpdate') return { ok: true, deleted: deleteUpdate(String(body.updateId || '')) };
     throw new Error('Unknown action: ' + body.action);
   });
 }
@@ -283,6 +295,74 @@ function readActivity(id) {
     });
   }
   return out;
+}
+
+function getUpdatesSheet() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(UPDATES_SHEET_NAME);
+  if (!sheet) {
+    sheet = ss.insertSheet(UPDATES_SHEET_NAME);
+    sheet.getRange(1, 1, 1, UPDATES_HEADERS.length).setValues([UPDATES_HEADERS]);
+  }
+  return sheet;
+}
+
+function readUpdates(id) {
+  if (!id) return [];
+  const sheet = getUpdatesSheet();
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return [];
+  const values = sheet.getRange(2, 1, lastRow - 1, UPDATES_HEADERS.length).getValues();
+  const out = [];
+  for (let i = values.length - 1; i >= 0 && out.length < UPDATES_LIMIT; i--) {
+    const r = values[i];
+    if (String(r[1]) !== id) continue;
+    out.push({ id: String(r[4]), leadId: String(r[1]), time: cellToString(r[0], 'time'), text: String(r[3]) });
+  }
+  return out;
+}
+
+/** Find a lead's current name by its ID (for the "Contact" column). */
+function contactName(id) {
+  const sheet = getSheet();
+  const cols = ensureHeaders(sheet);
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return null;
+  const values = sheet.getRange(2, 1, lastRow - 1, sheet.getLastColumn()).getValues();
+  for (let i = 0; i < values.length; i++) {
+    if (cellToString(values[i][cols.id], 'id') === id) return cellToString(values[i][cols.name], 'name');
+  }
+  return null;
+}
+
+function addUpdate(id, text) {
+  const clean = text.replace(/\r\n/g, '\n').trim();
+  if (!id) throw new Error('Missing lead.');
+  if (!clean) throw new Error('The update is empty.');
+  if (clean.length > UPDATE_MAX_LENGTH) throw new Error('The update is too long (max ' + UPDATE_MAX_LENGTH + ' characters).');
+  const name = contactName(id);
+  if (name === null) throw new Error('This lead no longer exists in the Sheet.');
+  const entry = { id: 'U-' + Utilities.getUuid().slice(0, 8), leadId: id, time: new Date().toISOString(), text: clean };
+  const sheet = getUpdatesSheet();
+  // Leading ' keeps everything as plain text (so "=..." is never treated as a formula).
+  const row = [entry.time, entry.leadId, name, entry.text, entry.id].map(function (v) { return v === '' ? '' : "'" + v; });
+  sheet.getRange(sheet.getLastRow() + 1, 1, 1, UPDATES_HEADERS.length).setValues([row]);
+  return entry;
+}
+
+function deleteUpdate(updateId) {
+  if (!updateId) return false;
+  const sheet = getUpdatesSheet();
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return false;
+  const ids = sheet.getRange(2, 5, lastRow - 1, 1).getValues();
+  for (let i = ids.length - 1; i >= 0; i--) {
+    if (String(ids[i][0]) === updateId) {
+      sheet.deleteRow(i + 2);
+      return true;
+    }
+  }
+  return false;
 }
 
 function readLeads() {

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Lead, Stage } from "../types";
 import { STAGES } from "./constants";
 import { auth, AuthRequiredError, store, type LeadChange } from "./storage";
@@ -187,17 +187,30 @@ export function useLeads() {
     [commit],
   );
 
-  /** A lead's live feed, newest first. */
-  const loadActivity = useCallback(
-    async (id: string) => {
+  /** Run a request; if the login expired, show the login screen (and still report the error). */
+  const withLogin = useCallback(
+    async <T,>(request: Promise<T>): Promise<T> => {
       try {
-        return await store.activity(id);
+        return await request;
       } catch (e) {
         if (e instanceof AuthRequiredError) handleError(e);
         throw e;
       }
     },
     [handleError],
+  );
+
+  /** A lead's live feed, newest first. */
+  const loadActivity = useCallback((id: string) => withLogin(store.activity(id)), [withLogin]);
+
+  /** Notes written about a lead ("updates"), newest first. */
+  const updates = useMemo(
+    () => ({
+      load: (id: string) => withLogin(store.updates(id)),
+      add: (id: string, text: string) => withLogin(store.addUpdate(id, text)),
+      remove: (updateId: string) => withLogin(store.deleteUpdate(updateId)),
+    }),
+    [withLogin],
   );
 
   const reset = useCallback(async () => {
@@ -221,6 +234,7 @@ export function useLeads() {
     applyColumns,
     updateLead,
     loadActivity,
+    updates,
     reset: mode === "demo" ? reset : undefined,
   };
 }

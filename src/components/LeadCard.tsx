@@ -4,7 +4,7 @@ import type { Lead } from "../types";
 import { PRIORITY_STYLE, STAGE_BY_ID } from "../lib/constants";
 import { formatDateTime, formatDay } from "../lib/format";
 
-export type DrawerTab = "details" | "feed";
+export type DrawerTab = "details" | "updates" | "feed";
 
 interface Props {
   lead: Lead;
@@ -52,21 +52,23 @@ export function LeadCardView({ lead, onOpen, overlay }: Props) {
         </div>
       </dl>
 
-      <div className="mt-3 grid grid-cols-2 gap-2">
-        <button
-          type="button"
-          onClick={() => onOpen(lead, "details")}
-          className="rounded-md border border-slate-200 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
-        >
-          Details
-        </button>
-        <button
-          type="button"
-          onClick={() => onOpen(lead, "feed")}
-          className="rounded-md border border-slate-200 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
-        >
-          Live feed
-        </button>
+      <div className="mt-3 grid grid-cols-3 gap-1.5">
+        {(
+          [
+            ["details", "Details"],
+            ["updates", "Updates"],
+            ["feed", "Live feed"],
+          ] as const
+        ).map(([tab, label]) => (
+          <button
+            key={tab}
+            type="button"
+            onClick={() => onOpen(lead, tab)}
+            className="rounded-md border border-slate-200 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50"
+          >
+            {label}
+          </button>
+        ))}
       </div>
     </div>
   );

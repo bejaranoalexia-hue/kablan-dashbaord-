@@ -32,6 +32,9 @@ if (isStatic) {
       load: () => Promise.reject(new NotConfiguredError()),
       save: async () => {},
       activity: async () => [],
+      updates: async () => [],
+      addUpdate: () => Promise.reject(new NotConfiguredError()),
+      deleteUpdate: async () => {},
     };
     auth = noLogin;
   }
@@ -41,6 +44,18 @@ if (isStatic) {
 }
 
 let demo = false;
+
+/** An Apps Script deployed before a feature existed answers "Unknown action": say what to do instead. */
+async function explainOldScript<T>(what: string, request: Promise<T>): Promise<T> {
+  try {
+    return await request;
+  } catch (e) {
+    if (e instanceof Error && e.message.includes("Unknown action")) {
+      throw new Error(`Your Apps Script needs updating to ${what}: paste the new Code.gs and deploy a new version.`);
+    }
+    throw e;
+  }
+}
 
 export const store: LeadStore = {
   get kind() {
@@ -60,19 +75,17 @@ export const store: LeadStore = {
   save(changes) {
     return demo ? localStore.save(changes) : remote.save(changes);
   },
-  async activity(id) {
-    if (demo) return localStore.activity(id);
-    try {
-      return await remote.activity(id);
-    } catch (e) {
-      // An Apps Script deployed before the live feed existed doesn't know this request.
-      if (e instanceof Error && e.message.includes("Unknown action")) {
-        throw new Error(
-          "Your Apps Script needs updating to show the live feed: paste the new Code.gs and deploy a new version.",
-        );
-      }
-      throw e;
-    }
+  activity(id) {
+    return demo ? localStore.activity(id) : explainOldScript("show the live feed", remote.activity(id));
+  },
+  updates(id) {
+    return demo ? localStore.updates(id) : explainOldScript("show updates", remote.updates(id));
+  },
+  addUpdate(id, text) {
+    return demo ? localStore.addUpdate(id, text) : explainOldScript("post updates", remote.addUpdate(id, text));
+  },
+  deleteUpdate(updateId) {
+    return demo ? localStore.deleteUpdate(updateId) : explainOldScript("delete updates", remote.deleteUpdate(updateId));
   },
   reset() {
     return localStore.reset!();

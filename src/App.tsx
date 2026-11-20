@@ -37,6 +37,7 @@ export default function App() {
     applyColumns,
     updateLead,
     loadActivity,
+    updates,
     reset,
   } = useLeads();
   const [filters, setFilters] = useState<Filters>({ search: "", priority: "" });
@@ -99,6 +100,7 @@ export default function App() {
           onTabChange={(tab) => setOpen({ ...open, tab })}
           onSave={updateLead}
           loadActivity={loadActivity}
+          updates={updates}
           refreshSignal={lastSynced}
           onClose={close}
         />
